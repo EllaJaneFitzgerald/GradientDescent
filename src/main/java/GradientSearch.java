@@ -12,10 +12,11 @@ import java.util.Arrays;
 
 
 public class GradientSearch implements Serializable{
-    GradientSearch (String hdfsPath, double alpha, double eps) {
+    GradientSearch (String hdfsPath, double alpha, int maxIter, int numPartition) {
         this.hdfsPath = hdfsPath;
         this.alpha = alpha;
-        this.eps = eps;
+        this.maxIter = maxIter;
+        this.numPartition = numPartition;
 
         Configuration conf = new Configuration();
         try {
@@ -46,10 +47,12 @@ public class GradientSearch implements Serializable{
     private double[] thetaPrev;
     // alpha - коэффициент обучения
     private double alpha;
-    // eps - точность
-    private double eps;
     // m - объем выборки
     private int m;
+    // maxIter - максимальное количество итераций
+    private int maxIter;
+    // numPartition - количество частей, на которое делятся данные
+    private int numPartition;
 
     // определяет размерность задачи
     public static int determineDimension(FSDataInputStream in) {
@@ -76,54 +79,45 @@ public class GradientSearch implements Serializable{
         return i;
     }
 
-    // критерий остановки
-    private boolean termination () {
-        boolean flag = true;
-        for (int i=0; i<n+1; i++) {
-            if (Math.abs(theta[i] - thetaPrev[i])>=eps) {
-                flag = false;
-                break;
-            }
-        }
-        return flag;
-    }
-
     public double[] go() {
         SparkConf conf = new SparkConf().setAppName("GradientSearch");
-        //conf.setMaster("local");
+        conf.setMaster("local");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        JavaRDD<String> lines = sc.textFile(hdfsPath);
+        JavaRDD<String> lines = sc.textFile(hdfsPath,numPartition);
         JavaRDD<double[]> points = lines.map(new GetPoint(n));
+        points.cache();
         JavaRDD<double[]> terms;
         double[] sum;
 
+        double oldError;
+        double newError = 1e+100;
         int l=0;
-        while (l<30000 && !termination()) {
+        do {
+            oldError = newError;
             System.arraycopy(theta,0,thetaPrev,0,n+1);
             terms = points.map(new MakeTerm(n,theta));
             sum = terms.reduce(new Sum(n));
             for (int j=0; j<n+1; j++) {
                 theta[j] = theta[j] + alpha * sum[j] /m;
-                //System.out.print(teta[j] + " ");
             }
-            //System.out.println();
+            newError = sum[n+1]/m;
+            System.out.println(newError);
             l++;
-        }
+        } while ((l<=10 || oldError>newError) && (l<maxIter));
         sc.stop();
 
         System.out.println("Количество итераций: " + l);
         System.out.println("Объем выборки: " + m);
-        return theta;
+        return thetaPrev;
     }
 
     public static void main(String[] args) {
-        double[] resTeta = new GradientSearch(args[0],Double.parseDouble(args[1]),Double.parseDouble(args[2])).go();
-        //double[] resTeta = new GradientSearch("hdfs://jarvis:8020/test1.txt",0.09,0.000001).go();
+        //double[] resTeta = new GradientSearch(args[0],Double.parseDouble(args[1]), Integer.parseInt(args[2]),Integer.parseInt(args[3])).go();
+        double[] resTeta = new GradientSearch("hdfs://jarvis:8020/test3.txt",0.1,30000, 4).go();
         for (int i=0; i<resTeta.length; i++) {
             System.out.print(resTeta[i] + " ");
         }
         System.out.println();
     }
-
 }

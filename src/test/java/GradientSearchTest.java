@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 public class GradientSearchTest {
     static String[] path = {"hdfs://jarvis:8020/test1.txt","hdfs://jarvis:8020/test2.txt","hdfs://jarvis:8020/test3.txt"};
     static double[] alpha = {0.09,0.09,0.01};
-    static double[] eps = {10e-6,10e-6,10e-6};
+    static double[] eps = {1e-6,1e-6,1e-6};
     static int[] n = new int[path.length];
     static int[] m = new int[path.length];
     static JavaSparkContext sc;
