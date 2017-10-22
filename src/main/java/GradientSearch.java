@@ -27,7 +27,7 @@ public class GradientSearch implements Serializable{
             Arrays.fill(theta, 1.0);
             thetaPrev = new double[n + 1];
             Arrays.fill(thetaPrev, 0.0);
-            m = getNumberOfLines(in);
+            m = getNumberOfLines(in)+1;
 
             in.close();
             fs.close();
@@ -52,7 +52,7 @@ public class GradientSearch implements Serializable{
     private int m;
 
     // определяет размерность задачи
-    private int determineDimension(FSDataInputStream in) {
+    public static int determineDimension(FSDataInputStream in) {
         String firstLine = "";
         try {
            firstLine = in.readLine();
@@ -64,8 +64,8 @@ public class GradientSearch implements Serializable{
     }
 
     // определяет объем выборки
-    private int getNumberOfLines(FSDataInputStream in) {
-        int i=1;
+    public static int getNumberOfLines(FSDataInputStream in) {
+        int i=0;
         try {
             while ((in.readLine()) != null) {
                 i++;
@@ -88,7 +88,7 @@ public class GradientSearch implements Serializable{
         return flag;
     }
 
-    public double[] go() throws IOException, InterruptedException {
+    public double[] go() {
         SparkConf conf = new SparkConf().setAppName("GradientSearch");
         //conf.setMaster("local");
         JavaSparkContext sc = new JavaSparkContext(conf);
@@ -117,7 +117,7 @@ public class GradientSearch implements Serializable{
         return theta;
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) {
         double[] resTeta = new GradientSearch(args[0],Double.parseDouble(args[1]),Double.parseDouble(args[2])).go();
         //double[] resTeta = new GradientSearch("hdfs://jarvis:8020/test1.txt",0.09,0.000001).go();
         for (int i=0; i<resTeta.length; i++) {
