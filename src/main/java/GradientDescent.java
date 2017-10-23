@@ -11,8 +11,8 @@ import java.net.URI;
 import java.util.Arrays;
 
 
-public class GradientSearch implements Serializable {
-    GradientSearch (String hdfsPath, double alpha, int maxIter, int minPartitions, String maxCores) {
+public class GradientDescent implements Serializable {
+    GradientDescent(String hdfsPath, double alpha, int maxIter, int minPartitions, String maxCores) {
         this.hdfsPath = hdfsPath;
         this.alpha = alpha;
         this.maxIter = maxIter;
@@ -84,7 +84,7 @@ public class GradientSearch implements Serializable {
 
     public double[] go() {
         long start = System.currentTimeMillis();
-        SparkConf conf = new SparkConf().setAppName("GradientSearch").set("spark.cores.max", maxCores);
+        SparkConf conf = new SparkConf().setAppName("GradientDescent").set("spark.cores.max", maxCores);
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<String> lines = sc.textFile(hdfsPath, minPartitions);
@@ -118,7 +118,7 @@ public class GradientSearch implements Serializable {
     }
 
     public static void main(String[] args) {
-        double[] resTheta = new GradientSearch(
+        double[] resTheta = new GradientDescent(
                 args[0],
                 Double.parseDouble(args[1]),
                 Integer.parseInt(args[2]),

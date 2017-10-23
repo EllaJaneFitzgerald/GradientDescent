@@ -11,7 +11,7 @@ Run the program with the following parameters:
 	- minPartitions (8)
 	- minCores (4)
 
-master $ bin/spark-submit --master spark://master:7077 --deploy-mode client ~/IdeaProjects/GS/target/GradientSearch-1.0-SNAPSHOT.jar hdfs://master:8020/test1.txt 0.09 30000 8 4
+master $ bin/spark-submit --master spark://master:7077 --deploy-mode client ~/IdeaProjects/GS/target/GradientDescent-1.0-SNAPSHOT.jar hdfs://master:8020/test1.txt 0.09 30000 8 4
 
 To monitor the execution use Spark UI and HDFS UI.
 

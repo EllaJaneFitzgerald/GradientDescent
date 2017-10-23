@@ -8,8 +8,6 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,7 +16,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class GradientSearchTest {
+public class GradientDescentTest {
     static String[] path = {"hdfs://jarvis:8020/test1.txt","hdfs://jarvis:8020/test2.txt","hdfs://jarvis:8020/test3.txt"};
     static int[] n = new int[path.length];
     static int[] m = new int[path.length];
@@ -26,7 +24,7 @@ public class GradientSearchTest {
 
     @Before
     public void tuning() {
-        SparkConf conf = new SparkConf().setAppName("GradientSearchTest").setMaster("local");
+        SparkConf conf = new SparkConf().setAppName("GradientDescentTest").setMaster("local");
         sc = new JavaSparkContext(conf);
 
         Configuration config = new Configuration();
@@ -34,8 +32,8 @@ public class GradientSearchTest {
             try {
                 FileSystem fs = FileSystem.get(URI.create(path[i]), config);
                 FSDataInputStream in = fs.open(new Path(path[i]));
-                n[i] = GradientSearch.determineDimension(in);
-                m[i] = GradientSearch.getNumberOfLines(in) + 1;
+                n[i] = GradientDescent.determineDimension(in);
+                m[i] = GradientDescent.getNumberOfLines(in) + 1;
                 in.close();
                 fs.close();
             } catch (IOException ex) {
@@ -133,7 +131,7 @@ public class GradientSearchTest {
 
     /*public static void main(String[] args) throws Exception {
         JUnitCore runner = new JUnitCore();
-        Result result = runner.run(GradientSearchTest.class);
+        Result result = runner.run(GradientDescentTest.class);
         System.out.println("run tests: " + result.getRunCount());
         System.out.println("failed tests: " + result.getFailureCount());
         System.out.println("ignored tests: " + result.getIgnoreCount());
