@@ -28,9 +28,3 @@ def gen_train_data(path_out='train_data.csv', d=3, part_rk=10, x_min=1, x_max=10
 # In[5]:
 
 gen_train_data(path_out='train_data_d3_n1000.csv', d=3)
-
-
-# In[ ]:
-
-
-
