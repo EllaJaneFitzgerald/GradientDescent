@@ -20,8 +20,6 @@ import static org.junit.Assert.*;
 
 public class GradientSearchTest {
     static String[] path = {"hdfs://jarvis:8020/test1.txt","hdfs://jarvis:8020/test2.txt","hdfs://jarvis:8020/test3.txt"};
-    static double[] alpha = {0.09,0.09,0.01};
-    static double[] eps = {1e-6,1e-6,1e-6};
     static int[] n = new int[path.length];
     static int[] m = new int[path.length];
     static JavaSparkContext sc;
@@ -132,25 +130,6 @@ public class GradientSearchTest {
     public void close() {
         sc.close();
     }
-
-
-   /* @Test
-    public void test1() throws IOException {
-        double[][] b = {{1,0}, {2, 1, 2}, {2.50639,0.03305}};
-
-        for (int j=0; j<n; j++) {
-            double[] a = new GradientSearch(path[j], alpha[j], eps[j]).go();
-            boolean flag = true;
-
-            for (int i = 0; i < a.length; i++) {
-                if (Math.abs(a[i] - b[j][i]) >= 100 * eps[j]) {
-                    flag = false;
-                    break;
-                }
-            }
-            assertTrue(flag);
-        }
-    }*/
 
     /*public static void main(String[] args) throws Exception {
         JUnitCore runner = new JUnitCore();

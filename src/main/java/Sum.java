@@ -1,7 +1,7 @@
 import org.apache.spark.api.java.function.Function2;
 
-// суммирует таблицу по столбцам
-// последний элемент - ошибка
+// sum table by rows
+// last element - error
 public class Sum  implements Function2<double[], double[], double[]> {
     private int n;
 

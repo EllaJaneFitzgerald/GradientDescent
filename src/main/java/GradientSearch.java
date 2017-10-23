@@ -11,12 +11,13 @@ import java.net.URI;
 import java.util.Arrays;
 
 
-public class GradientSearch implements Serializable{
-    GradientSearch (String hdfsPath, double alpha, int maxIter, int numPartition) {
+public class GradientSearch implements Serializable {
+    GradientSearch (String hdfsPath, double alpha, int maxIter, int minPartitions, String maxCores) {
         this.hdfsPath = hdfsPath;
         this.alpha = alpha;
         this.maxIter = maxIter;
-        this.numPartition = numPartition;
+        this.minPartitions = minPartitions;
+        this.maxCores = maxCores;
 
         Configuration conf = new Configuration();
         try {
@@ -37,24 +38,26 @@ public class GradientSearch implements Serializable{
         }
     }
 
-    // путь к файлу с данными HDFS
+    // path to datafile on HDFS
     private String hdfsPath;
-    // n - размерность задачи
-    private  int n;
-    // teta - коэффициенты линейной регрессии
+    // dimensionality of data
+    private int n;
+    // linear regression coefficients
     private double[] theta;
-    // tetaPrev - коэффициенты линейной регрессии на предыдущей итерации
+    // linear regression coefficients one iteration ago
     private double[] thetaPrev;
-    // alpha - коэффициент обучения
+    // learning rate
     private double alpha;
-    // m - объем выборки
+    // sample size
     private int m;
-    // maxIter - максимальное количество итераций
+    // maximum number of iterations
     private int maxIter;
-    // numPartition - количество частей, на которое делятся данные
-    private int numPartition;
+    // minimum number of partitions which the dataset is split into
+    private int minPartitions;
+    // maximum number of active CPU cores
+    private String maxCores;
 
-    // определяет размерность задачи
+    // determine dimensionality
     public static int determineDimension(FSDataInputStream in) {
         String firstLine = "";
         try {
@@ -66,7 +69,7 @@ public class GradientSearch implements Serializable{
         return parts.length - 1;
     }
 
-    // определяет объем выборки
+    // determine sample size
     public static int getNumberOfLines(FSDataInputStream in) {
         int i=0;
         try {
@@ -80,11 +83,11 @@ public class GradientSearch implements Serializable{
     }
 
     public double[] go() {
-        SparkConf conf = new SparkConf().setAppName("GradientSearch");
-        conf.setMaster("local");
+        long start = System.currentTimeMillis();
+        SparkConf conf = new SparkConf().setAppName("GradientSearch").set("spark.cores.max", maxCores);
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        JavaRDD<String> lines = sc.textFile(hdfsPath,numPartition);
+        JavaRDD<String> lines = sc.textFile(hdfsPath, minPartitions);
         JavaRDD<double[]> points = lines.map(new GetPoint(n));
         points.cache();
         JavaRDD<double[]> terms;
@@ -92,14 +95,14 @@ public class GradientSearch implements Serializable{
 
         double oldError;
         double newError = 1e+100;
-        int l=0;
+        int l = 0;
         do {
             oldError = newError;
             System.arraycopy(theta,0,thetaPrev,0,n+1);
-            terms = points.map(new MakeTerm(n,theta));
+            terms = points.map(new MakeTerm(n, theta));
             sum = terms.reduce(new Sum(n));
             for (int j=0; j<n+1; j++) {
-                theta[j] = theta[j] + alpha * sum[j] /m;
+                theta[j] = theta[j] + alpha * sum[j]/m;
             }
             newError = sum[n+1]/m;
             System.out.println(newError);
@@ -107,16 +110,23 @@ public class GradientSearch implements Serializable{
         } while ((l<=10 || oldError>newError) && (l<maxIter));
         sc.stop();
 
+        long finish = System.currentTimeMillis();
+        System.out.println("Время выполнения: " + (finish-start));
         System.out.println("Количество итераций: " + l);
         System.out.println("Объем выборки: " + m);
         return thetaPrev;
     }
 
     public static void main(String[] args) {
-        //double[] resTeta = new GradientSearch(args[0],Double.parseDouble(args[1]), Integer.parseInt(args[2]),Integer.parseInt(args[3])).go();
-        double[] resTeta = new GradientSearch("hdfs://jarvis:8020/test3.txt",0.1,30000, 4).go();
-        for (int i=0; i<resTeta.length; i++) {
-            System.out.print(resTeta[i] + " ");
+        double[] resTheta = new GradientSearch(
+                args[0],
+                Double.parseDouble(args[1]),
+                Integer.parseInt(args[2]),
+                Integer.parseInt(args[3]),
+                args[4]
+        ).go();
+        for (double t: resTheta) {
+            System.out.print(t + " ");
         }
         System.out.println();
     }

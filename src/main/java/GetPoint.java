@@ -1,6 +1,6 @@
 import org.apache.spark.api.java.function.Function;
 
-// в строке выделяет координаты
+// parse string of coordinates into array
 public class GetPoint implements Function<String, double[]> {
     private int n;
 

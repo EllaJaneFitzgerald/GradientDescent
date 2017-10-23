@@ -1,7 +1,6 @@
 import org.apache.spark.api.java.function.Function;
 
-// возвращает массив вида b = {(y-h(x))*x_0, ..., (y-h(x))*x_(n-1), y-h(x), (y-h(x))^2}
-// последний столбец - для вычисления ошибки
+// return an array of the form b = {(y-h(x))*x_0, ..., (y-h(x))*x_(n-1), y-h(x), (y-h(x))^2}
 public class MakeTerm implements Function<double[], double[]> {
     private int n;
     private double[] theta;
@@ -11,7 +10,7 @@ public class MakeTerm implements Function<double[], double[]> {
         this.theta = theta;
     }
 
-    // h_teta(x) = theta_0*x_0 + ... + theta_(n-1)*x_(n-1) + theta_n
+    // h_theta(x) = theta_0*x_0 + ... + theta_(n-1)*x_(n-1) + theta_n
     private double hLinear (double[] x) {
         double sum = 0;
         for (int i=0; i<n; i++) {
