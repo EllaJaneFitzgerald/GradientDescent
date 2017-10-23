@@ -1,5 +1,5 @@
-- Set up DNS (forward and reverse).
-- Set up HDFS:
+- Setup DNS (forward and reverse).
+- Setup HDFS:
   - master:
     - `etc/hadoop/hadoop-env.sh`
 
